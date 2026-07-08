@@ -1,4 +1,4 @@
-# 🛵 GoodTech — Smart Food Delivery System
+# 🛵 CraveDrop — Smart Food Delivery System
 
 A campus logistics engine for food ordering, restaurant management, and rider assignment — built entirely on foundational data structures rather than frameworks or libraries.
 
@@ -12,7 +12,7 @@ A campus logistics engine for food ordering, restaurant management, and rider as
 
 ## 📖 Overview
 
-GoodTech simulates a real delivery platform end-to-end — browsing restaurants, building a cart, checking out, and tracking a rider — using nothing but core data structures implemented from scratch:
+CraveDrop simulates a real delivery platform end-to-end — browsing restaurants, building a cart, checking out, and tracking a rider — using nothing but core data structures implemented from scratch:
 
 | Data Structure | Where it's used |
 |---|---|
