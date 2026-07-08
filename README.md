@@ -100,9 +100,11 @@ Use this sequence to exercise every data structure in one pass:
 
 ## 🌐 Bonus: Browser Demo
 
-There's also a standalone, single-file **web demo** (`[CraveDrop-web-demo.html](https://cravedrop-web-demo.netlify.app/)`) that reimplements the same routing graph, Dijkstra pathing, and min-heap rider ranking logic in JavaScript, with a live-animated tracking map — useful for showing the project off without requiring Java installed. It's a client-side simulation only (no backend, no real GPS), meant as a portfolio companion piece to the CLI system above.
+**Live demo:** [https://cravedrop-web-demo.netlify.app/](https://cravedrop-web-demo.netlify.app/)
 
-To view it, open the file directly in any browser, or deploy it as a static site (e.g. drag-and-drop onto [Netlify Drop](https://app.netlify.com/drop) or push to GitHub Pages).
+There's also a standalone, single-file **web demo** (`CraveDrop-web-demo.html`) that reimplements the same routing graph, Dijkstra pathing, and min-heap rider ranking logic in JavaScript, with a live-animated tracking map — useful for showing the project off without requiring Java installed. It's a client-side simulation only (no backend, no real GPS), meant as a portfolio companion piece to the CLI system above.
+
+You can try it directly at the link above, or run it locally by opening the `.html` file in any browser.
 
 ---
 
