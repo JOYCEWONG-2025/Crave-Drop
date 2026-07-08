@@ -1,0 +1,58 @@
+R001,Pepperoni Pizza,14.9,Italian
+R001,Garlic Bread,5.9,Italian
+R001,Tiramisu,8.9,Italian
+R001,Margherita Pizza,12.9,Italian
+R001,BBQ Chicken Pizza,15.9,Italian
+R001,Strawberry Cake,11.0,Italian
+R002,Tuna Roll,12.9,Japanese
+R002,Gyoza,8.9,Japanese
+R002,Salmon Sushi,15.9,Japanese
+R002,Matcha Ice Cream,7.9,Japanese
+R002,Miso Soup,5.9,Japanese
+R003,Onion Rings,6.9,American
+R003,Beef Burger,13.9,American
+R003,French Fries,5.9,American
+R003,Cheese Burger,14.9,American
+R003,Chicken Burger,12.9,American
+R004,Quesadilla,10.9,Mexican
+R004,Beef Taco,11.9,Mexican
+R004,Nachos,8.9,Mexican
+R004,Churros,6.9,Mexican
+R004,Chicken Burrito,13.9,Mexican
+R005,Lasagna,15.9,Italian
+R005,Aglio Olio,13.9,Italian
+R005,Penne Arrabbiata,12.9,Italian
+R005,Bruschetta,7.9,Italian
+R005,Carbonara,14.9,Italian
+R006,Mango Lassi,5.9,Indian
+R006,Garlic Naan,3.9,Indian
+R006,Chicken Briyani,14.9,Indian
+R006,Dal Tadka,9.9,Indian
+R006,Butter Chicken,13.9,Indian
+R007,Smoothie,7.9,Healthy
+R007,Greek Salad,11.9,Healthy
+R007,Grilled Chicken Bowl,14.9,Healthy
+R007,Caesar Salad,12.9,Healthy
+R007,Quinoa Bowl,13.9,Healthy
+R008,Waffles,10.9,Desserts
+R008,Chocolate Lava Cake,9.9,Desserts
+R008,Macarons,6.9,Desserts
+R008,Crepe,8.9,Desserts
+R008,Ice Cream Sundae,7.9,Desserts
+R009,Zinger Burger,13.9,Fast Food
+R009,Coleslaw,4.9,Fast Food
+R009,Spicy Chicken,12.9,Fast Food
+R009,Mashed Potato,5.9,Fast Food
+R009,Original Fried Chicken,11.9,Fast Food
+R010,Tofu Stir Fry,10.9,Vegan
+R010,Acai Bowl,13.9,Vegan
+R010,Veggie Wrap,9.9,Vegan
+R010,Mushroom Burger,12.9,Vegan
+R010,Avocado Toast,11.9,Vegan
+R011,Zus Cold Brew,10.9,Cafe
+R011,Americano,7.9,Cafe
+R011,Matcha Latte,9.9,Cafe
+R011,Croissant,6.9,Cafe
+R011,Caramel Latte,9.9,Cafe
+R012,Jasmine Tea,11.9,Milk Tea
+R012,Matcha Bobo,13.5,Milk Tea

@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CraveDrop — Live Delivery Tracking Demo</title>
+<style>
+  :root{
+    --cream:#FFF8F0;
+    --cream-deep:#F5EBE0;
+    --red:#DA291C;
+    --red-deep:#B31B12;
+    --gold:#FFC72C;
+    --gold-deep:#E6A100;
+    --ink:#23201B;
+    --muted:#8A7F72;
+    --line:#EFE3D3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:22px;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(255,199,44,0.18), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(218,41,28,0.12), transparent 45%),
+      var(--cream);
+    font-family:'Segoe UI', system-ui, -apple-system, sans-serif;
+    color:var(--ink);
+    padding:32px 16px;
+  }
+  .banner{
+    text-align:center;
+    max-width:420px;
+  }
+  .banner .eyebrow{
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:2px;
+    color:var(--red);
+    text-transform:uppercase;
+  }
+  .banner h1{
+    font-size:26px;
+    margin:6px 0 4px;
+    font-weight:900;
+    letter-spacing:-0.5px;
+  }
+  .banner p{
+    font-size:13.5px;
+    color:var(--muted);
+    line-height:1.5;
+    margin:0;
+  }
+
+  /* ---------- PHONE FRAME ---------- */
+  .phone{
+    width:380px;
+    height:790px;
+    background:#111;
+    border-radius:46px;
+    padding:14px;
+    box-shadow:0 30px 60px -20px rgba(60,30,10,0.35), 0 2px 0 rgba(255,255,255,0.4) inset;
+    position:relative;
+  }
+  .phone::before{
+    content:"";
+    position:absolute;
+    top:26px; left:50%; transform:translateX(-50%);
+    width:120px; height:22px;
+    background:#111;
+    border-radius:14px;
+    z-index:5;
+  }
+  .screen{
+    width:100%; height:100%;
+    background:var(--cream);
+    border-radius:32px;
+    overflow:hidden;
+    position:relative;
+  }
+  .page{
+    position:absolute; inset:0;
+    display:none;
+    flex-direction:column;
+    overflow-y:auto;
+  }
+  .page.active{ display:flex; }
+  .page::-webkit-scrollbar{ display:none; }
+
+  /* ---------- LOGIN ---------- */
+  #page-login{
+    align-items:center;
+    justify-content:center;
+    padding:70px 34px 40px;
+    background:linear-gradient(to bottom right, var(--cream), var(--cream-deep));
+  }
+  .food-cluster{ display:flex; gap:10px; margin-bottom:14px; }
+  .food-cluster span{
+    font-size:44px;
+    filter: drop-shadow(0 0 14px rgba(255,166,48,0.55));
+    transition:transform .2s ease;
+  }
+  .food-cluster span:hover{ transform:scale(1.15); }
+  .gold-bar{ width:44px; height:4px; border-radius:10px; background:var(--gold); margin-bottom:14px; }
+  #page-login h1{
+    font-size:38px; font-weight:900; margin:0; letter-spacing:-1px;
+    text-shadow:0 2px 4px rgba(0,0,0,0.05);
+  }
+  #page-login .tagline{
+    font-size:11.5px; font-weight:700; color:var(--red); letter-spacing:1.5px;
+    margin:6px 0 30px; text-align:center;
+  }
+  .login-card{
+    background:#fff; width:100%; border-radius:22px; padding:28px 26px;
+    box-shadow:0 20px 40px -20px rgba(120,40,20,0.15);
+    text-align:center;
+  }
+  .login-card h2{ margin:0 0 4px; font-size:20px; }
+  .login-card p{ margin:0 0 18px; font-size:12.5px; color:var(--muted); }
+  .btn{
+    display:block; width:100%; border:none; border-radius:14px;
+    padding:14px; font-size:14.5px; font-weight:700; cursor:pointer;
+    margin-bottom:12px; transition:filter .15s ease, transform .1s ease;
+  }
+  .btn:active{ transform:scale(0.98); }
+  .btn-primary{ background:linear-gradient(to bottom right, #E63946, var(--red-deep)); color:#fff; }
+  .btn-primary:hover{ filter:brightness(1.06); }
+  .btn-gold{ background:linear-gradient(to bottom right, #FFD54F, var(--gold)); color:#222; }
+  .btn-gold:hover{ filter:brightness(1.04); }
+  .btn-ghost{ background:transparent; border:1px solid var(--line); color:var(--muted); }
+
+  /* ---------- TOPBAR (shared) ---------- */
+  .topbar{
+    display:flex; align-items:center; gap:10px;
+    padding:20px 18px 14px; background:var(--cream);
+    position:sticky; top:0; z-index:2;
+    border-bottom:1px solid var(--line);
+  }
+  .topbar button{
+    background:#fff; border:1px solid var(--line); width:32px; height:32px;
+    border-radius:10px; cursor:pointer; font-size:14px; color:var(--ink);
+  }
+  .topbar h3{ margin:0; font-size:16px; flex:1; }
+  .cart-pill{
+    background:var(--red); color:#fff; font-size:11px; font-weight:700;
+    padding:5px 10px; border-radius:20px;
+  }
+
+  /* ---------- RESTAURANT LIST ---------- */
+  #page-restaurants .list{ padding:12px 18px 24px; display:flex; flex-direction:column; gap:10px; }
+  .search{
+    margin:0 18px 4px; padding:11px 14px; border-radius:14px; border:1px solid var(--line);
+    background:#fff; font-size:13px; width:calc(100% - 36px);
+  }
+  .r-card{
+    background:#fff; border-radius:16px; padding:14px; display:flex; gap:12px; align-items:center;
+    box-shadow:0 6px 16px -10px rgba(80,40,20,0.15); cursor:pointer; border:1px solid transparent;
+    transition:border-color .15s ease, transform .1s ease;
+  }
+  .r-card:hover{ border-color:var(--gold); transform:translateY(-1px); }
+  .r-emoji{ font-size:30px; width:44px; text-align:center; }
+  .r-info{ flex:1; }
+  .r-info .name{ font-weight:700; font-size:14px; }
+  .r-info .meta{ font-size:11.5px; color:var(--muted); margin-top:2px; }
+  .r-info .loc{ font-size:11px; color:var(--gold-deep); font-weight:700; margin-top:2px; }
+
+  /* ---------- MENU ---------- */
+  #page-menu .list{ padding:8px 18px 24px; display:flex; flex-direction:column; gap:10px; }
+  .m-item{
+    background:#fff; border-radius:14px; padding:12px 14px; display:flex; align-items:center;
+    justify-content:space-between; box-shadow:0 6px 14px -10px rgba(80,40,20,0.12);
+  }
+  .m-item .mname{ font-weight:700; font-size:13.5px; }
+  .m-item .mprice{ font-size:12px; color:var(--muted); margin-top:2px; }
+  .add-btn{
+    border:none; background:var(--gold); color:#222; font-weight:800; font-size:16px;
+    width:32px; height:32px; border-radius:10px; cursor:pointer;
+  }
+  .add-btn:active{ transform:scale(0.9); }
+
+  /* ---------- CART ---------- */
+  #page-cart .list{ padding:8px 18px; display:flex; flex-direction:column; gap:8px; }
+  .c-item{
+    display:flex; justify-content:space-between; align-items:center;
+    background:#fff; padding:10px 14px; border-radius:12px; font-size:13px;
+    box-shadow:0 4px 10px -8px rgba(80,40,20,0.12);
+  }
+  .c-item button{ border:none; background:transparent; color:var(--red); font-weight:700; cursor:pointer; }
+  .cart-footer{ margin-top:auto; padding:16px 18px 22px; border-top:1px solid var(--line); background:#fff; }
+  .total-row{ display:flex; justify-content:space-between; font-weight:800; font-size:16px; margin-bottom:14px; }
+  select.loc-select{
+    width:100%; padding:11px 12px; border-radius:12px; border:1px solid var(--line);
+    margin-bottom:14px; font-size:13px; background:#fff;
+  }
+  .field-label{ font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; display:block; }
+  .empty-note{ text-align:center; color:var(--muted); font-size:13px; padding:40px 20px; }
+
+  /* ---------- RIDER ASSIGN ---------- */
+  #page-assign{ padding:26px 20px; align-items:center; text-align:center; }
+  #page-assign h2{ font-size:18px; margin:14px 0 2px; }
+  #page-assign .sub{ font-size:12px; color:var(--muted); margin-bottom:18px; }
+  .heap-table{ width:100%; border-collapse:collapse; font-size:12px; }
+  .heap-table th{ text-align:left; color:var(--muted); font-weight:700; padding:6px 8px; border-bottom:1px solid var(--line); }
+  .heap-table td{ padding:8px; border-bottom:1px solid var(--line); }
+  .heap-table tr.winner{ background:rgba(255,199,44,0.18); font-weight:800; }
+  .rank-badge{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:20px; height:20px; border-radius:50%; background:var(--line); font-size:10px; font-weight:800;
+  }
+  .rank-badge.top{ background:var(--gold); color:#222; }
+  .spinner{
+    width:52px; height:52px; border-radius:50%;
+    border:5px solid var(--line); border-top-color:var(--red);
+    animation:spin 0.9s linear infinite; margin:20px auto;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg);} }
+
+  /* ---------- TRACKING ---------- */
+  #page-tracking{ padding:0; }
+  .map-wrap{ position:relative; background:#FBF2E4; height:340px; border-bottom:1px solid var(--line); }
+  .map-wrap svg{ width:100%; height:100%; }
+  .status-card{ padding:18px 20px; }
+  .status-card .rider-row{ display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+  .rider-avatar{
+    width:44px; height:44px; border-radius:50%; background:linear-gradient(to bottom right,#FFD54F,var(--gold));
+    display:flex; align-items:center; justify-content:center; font-size:20px;
+  }
+  .rider-name{ font-weight:800; font-size:14px; }
+  .rider-rating{ font-size:11.5px; color:var(--muted); }
+  .status-text{ font-weight:700; font-size:14px; margin-bottom:6px; }
+  .progress-track{ height:8px; background:var(--line); border-radius:10px; overflow:hidden; margin-bottom:10px; }
+  .progress-fill{ height:100%; background:linear-gradient(to right, var(--gold), var(--red)); width:0%; transition:width .3s linear; }
+  .eta-row{ display:flex; justify-content:space-between; font-size:12px; color:var(--muted); }
+
+  /* ---------- DELIVERED ---------- */
+  #page-delivered{ align-items:center; justify-content:center; text-align:center; padding:40px; }
+  #page-delivered .big-emoji{ font-size:60px; margin-bottom:10px; }
+  #page-delivered h2{ margin:0 0 6px; font-size:20px; }
+  #page-delivered p{ color:var(--muted); font-size:13px; margin:0 0 26px; }
+
+  footer{ text-align:center; font-size:11.5px; color:var(--muted); max-width:420px; }
+  footer a{ color:var(--red); }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <div class="eyebrow">Portfolio Demo</div>
+  <h1>CraveDrop — Live Tracking, Simulated</h1>
+  <p>A browser-based reimagining of the GoodTech Smart Food Delivery System (WIA1002). Same graph, Dijkstra routing, and min-heap rider ranking from the original Java console app — now running live in a mobile-style UI.</p>
+</div>
+
+<div class="phone">
+  <div class="screen">
+
+    <!-- LOGIN -->
+    <div class="page active" id="page-login">
+      <div class="food-cluster">
+        <span>🍔</span><span>🍕</span><span>🍟</span>
+      </div>
+      <div class="gold-bar"></div>
+      <h1>CraveDrop</h1>
+      <div class="tagline">SIZZLING HOT DELIVERY RIGHT TO YOUR DOOR</div>
+      <div class="login-card">
+        <h2>Welcome back!</h2>
+        <p>Select a portal to start ordering</p>
+        <button class="btn btn-primary" onclick="go('page-restaurants')">👤&nbsp;&nbsp;Customer Portal</button>
+        <button class="btn btn-gold" disabled style="opacity:.5;cursor:not-allowed;">🔧&nbsp;&nbsp;Management Portal (demo only)</button>
+      </div>
+    </div>
+
+    <!-- RESTAURANTS -->
+    <div class="page" id="page-restaurants">
+      <div class="topbar">
+        <button onclick="go('page-login')">←</button>
+        <h3>Restaurants</h3>
+      </div>
+      <input class="search" id="searchBox" placeholder="Search restaurant or cuisine..." oninput="renderRestaurants()">
+      <div class="list" id="restaurantList"></div>
+    </div>
+
+    <!-- MENU -->
+    <div class="page" id="page-menu">
+      <div class="topbar">
+        <button onclick="go('page-restaurants')">←</button>
+        <h3 id="menuTitle">Menu</h3>
+        <div class="cart-pill" onclick="go('page-cart')" style="cursor:pointer;">🛒 <span id="cartCount">0</span></div>
+      </div>
+      <div class="list" id="menuList"></div>
+    </div>
+
+    <!-- CART -->
+    <div class="page" id="page-cart">
+      <div class="topbar">
+        <button onclick="go('page-restaurants')">←</button>
+        <h3>Your Cart</h3>
+      </div>
+      <div class="list" id="cartList"></div>
+      <div class="cart-footer" id="cartFooter">
+        <label class="field-label">Delivery location</label>
+        <select class="loc-select" id="deliverySelect"></select>
+        <div class="total-row"><span>Total</span><span id="cartTotal">RM 0.00</span></div>
+        <button class="btn btn-primary" onclick="confirmOrder()">Confirm Order & Checkout</button>
+      </div>
+    </div>
+
+    <!-- RIDER ASSIGNMENT -->
+    <div class="page" id="page-assign">
+      <h3 style="margin:6px 0 0;font-size:13px;color:var(--muted);font-weight:700;letter-spacing:1px;">MIN-HEAP RIDER RANKING</h3>
+      <div class="spinner" id="assignSpinner"></div>
+      <div id="assignResult" style="display:none;width:100%;">
+        <h2>Best rider auto-selected 🏆</h2>
+        <div class="sub">Ranked by shortest Dijkstra distance to the restaurant, tie-broken by rating</div>
+        <table class="heap-table">
+          <thead><tr><th>#</th><th>Rider</th><th>Rating</th><th>Distance</th></tr></thead>
+          <tbody id="heapBody"></tbody>
+        </table>
+        <button class="btn btn-primary" style="margin-top:22px;" onclick="startTracking()">Track My Order →</button>
+      </div>
+    </div>
+
+    <!-- LIVE TRACKING -->
+    <div class="page" id="page-tracking">
+      <div class="topbar">
+        <button onclick="go('page-login')">←</button>
+        <h3>Track Order</h3>
+      </div>
+      <div class="map-wrap">
+        <svg id="mapSvg" viewBox="0 0 1000 620"></svg>
+      </div>
+      <div class="status-card">
+        <div class="rider-row">
+          <div class="rider-avatar">🛵</div>
+          <div>
+            <div class="rider-name" id="trackRiderName">—</div>
+            <div class="rider-rating" id="trackRiderRating">—</div>
+          </div>
+        </div>
+        <div class="status-text" id="statusText">Preparing your order...</div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="eta-row">
+          <span id="etaText">ETA —</span>
+          <span id="distText">— km remaining</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DELIVERED -->
+    <div class="page" id="page-delivered">
+      <div class="big-emoji">🎉</div>
+      <h2>Delivered!</h2>
+      <p>Your order arrived. Thanks for using CraveDrop.</p>
+      <button class="btn btn-primary" onclick="resetApp()" style="max-width:220px;">Order Again</button>
+    </div>
+
+  </div>
+</div>
+
+<footer>Client-side simulation only — no real riders, GPS, or backend. Built to demo the routing &amp; ranking logic from the original desktop app in a shareable, deployable form.</footer>
+
+<script>
+/* ============================= DATA (ported from the original project's .txt files) ============================= */
+const restaurants = [
+  {id:"R001", name:"Pizza Place", loc:"Mid Valley Megamall", cuisine:"Italian", emoji:"🍕"},
+  {id:"R002", name:"Sushi Spot", loc:"Mid Valley Megamall", cuisine:"Japanese", emoji:"🍣"},
+  {id:"R003", name:"Burger Joint", loc:"KL Gateway Mall", cuisine:"American", emoji:"🍔"},
+  {id:"R004", name:"Taco Fiesta", loc:"Mid Valley Megamall", cuisine:"Mexican", emoji:"🌮"},
+  {id:"R005", name:"Pasta House", loc:"KL Gateway Mall", cuisine:"Italian", emoji:"🍝"},
+  {id:"R006", name:"Curry Corner", loc:"KL Gateway Mall", cuisine:"Indian", emoji:"🍛"},
+  {id:"R007", name:"Salad Bar", loc:"Mid Valley Megamall", cuisine:"Healthy", emoji:"🥗"},
+  {id:"R008", name:"Dessert Haven", loc:"Mid Valley Megamall", cuisine:"Desserts", emoji:"🍰"},
+  {id:"R009", name:"KFC", loc:"KFC University", cuisine:"Fast Food", emoji:"🍗"},
+  {id:"R010", name:"Vegan Delights", loc:"Mid Valley Megamall", cuisine:"Vegan", emoji:"🥑"},
+  {id:"R011", name:"Zus Coffee", loc:"Zus Coffee University Malaya", cuisine:"Cafe", emoji:"☕"},
+  {id:"R012", name:"HeyTea", loc:"Mid Valley Megamall", cuisine:"Milk Tea", emoji:"🧋"},
+];
+
+const menus = {
+  R001:[["Pepperoni Pizza",14.9],["Garlic Bread",5.9],["Tiramisu",8.9],["Margherita Pizza",12.9],["BBQ Chicken Pizza",15.9],["Strawberry Cake",11.0]],
+  R002:[["Tuna Roll",12.9],["Gyoza",8.9],["Salmon Sushi",15.9],["Matcha Ice Cream",7.9],["Miso Soup",5.9]],
+  R003:[["Onion Rings",6.9],["Beef Burger",13.9],["French Fries",5.9],["Cheese Burger",14.9],["Chicken Burger",12.9]],
+  R004:[["Quesadilla",10.9],["Beef Taco",11.9],["Nachos",8.9],["Churros",6.9],["Chicken Burrito",13.9]],
+  R005:[["Lasagna",15.9],["Aglio Olio",13.9],["Penne Arrabbiata",12.9],["Bruschetta",7.9],["Carbonara",14.9]],
+  R006:[["Mango Lassi",5.9],["Garlic Naan",3.9],["Chicken Briyani",14.9],["Dal Tadka",9.9],["Butter Chicken",13.9]],
+  R007:[["Smoothie",7.9],["Greek Salad",11.9],["Grilled Chicken Bowl",14.9],["Caesar Salad",12.9],["Quinoa Bowl",13.9]],
+  R008:[["Waffles",10.9],["Chocolate Lava Cake",9.9],["Macarons",6.9],["Crepe",8.9],["Ice Cream Sundae",7.9]],
+  R009:[["Zinger Burger",13.9],["Coleslaw",4.9],["Spicy Chicken",12.9],["Mashed Potato",5.9],["Original Fried Chicken",11.9]],
+  R010:[["Tofu Stir Fry",10.9],["Acai Bowl",13.9],["Veggie Wrap",9.9],["Mushroom Burger",12.9],["Avocado Toast",11.9]],
+  R011:[["Zus Cold Brew",10.9],["Americano",7.9],["Matcha Latte",9.9],["Croissant",6.9],["Caramel Latte",9.9]],
+  R012:[["Jasmine Tea",11.9],["Matcha Bobo",13.5]],
+};
+
+const riders = [
+  {id:"D001", name:"Rider_Amir", loc:"UM Central", rating:4.8},
+  {id:"D002", name:"Rider_Siti", loc:"UM Central", rating:4.5},
+  {id:"D003", name:"Rider_Raju", loc:"PJ Gate", rating:4.8},
+  {id:"D004", name:"Rider_Li", loc:"UM Central", rating:4.4},
+];
+
+/* Campus graph — ported directly from MainApplication.java's CityMap setup */
+const nodePos = {
+  "PJ Gate":                       {x:90,  y:330},
+  "UM Central":                    {x:300, y:330},
+  "Main Library":                  {x:300, y:210},
+  "Zus Coffee University Malaya":  {x:280, y:100},
+  "Faculty of Computer Science":   {x:430, y:430},
+  "DTC":                           {x:430, y:280},
+  "KK12 Hostel":                   {x:430, y:150},
+  "KL Gate":                       {x:600, y:210},
+  "KL Gateway Mall":               {x:760, y:280},
+  "Mid Valley Megamall":           {x:880, y:430},
+  "KFC University":                {x:820, y:100},
+};
+
+const roads = [
+  ["UM Central","DTC",0.8,true],
+  ["UM Central","Faculty of Computer Science",1.3,false],
+  ["UM Central","Main Library",0.45,true],
+  ["DTC","KL Gate",1.4,true],
+  ["DTC","KK12 Hostel",0.9,true],
+  ["KK12 Hostel","KL Gate",1.0,true],
+  ["KK12 Hostel","Faculty of Computer Science",2.5,false],
+  ["Zus Coffee University Malaya","UM Central",0.35,true],
+  ["Zus Coffee University Malaya","DTC",0.65,true],
+  ["PJ Gate","UM Central",0.75,true],
+  ["Main Library","Zus Coffee University Malaya",0.1,true],
+  ["KL Gate","Main Library",1.1,true],
+  ["PJ Gate","Main Library",0.35,true],
+  ["KL Gate","PJ Gate",1.3,true],
+  ["KL Gate","Mid Valley Megamall",3.2,false],
+  ["KL Gate","KL Gateway Mall",1.8,false],
+  ["KL Gateway Mall","Mid Valley Megamall",2.0,false],
+  ["KL Gateway Mall","KFC University",4.0,false],
+  ["KL Gateway Mall","PJ Gate",3.7,false],
+  ["PJ Gate","KFC University",1.0,false],
+];
+
+const graph = {};
+Object.keys(nodePos).forEach(n => graph[n] = []);
+roads.forEach(([a,b,d,oneWay]) => {
+  graph[a].push({to:b, d});
+  if(!oneWay) graph[b].push({to:a, d});
+});
+
+/* ============================= DIJKSTRA ============================= */
+function dijkstra(start, end){
+  const dist = {}, prev = {}, visited = {};
+  Object.keys(graph).forEach(n => dist[n] = Infinity);
+  dist[start] = 0;
+  const pq = [[0,start]];
+  while(pq.length){
+    pq.sort((a,b)=>a[0]-b[0]);
+    const [d,u] = pq.shift();
+    if(visited[u]) continue;
+    visited[u] = true;
+    if(u===end) break;
+    (graph[u]||[]).forEach(edge=>{
+      const nd = d + edge.d;
+      if(nd < dist[edge.to]){
+        dist[edge.to] = nd;
+        prev[edge.to] = u;
+        pq.push([nd, edge.to]);
+      }
+    });
+  }
+  const path = [];
+  let cur = end;
+  if(dist[end]===Infinity) return {dist:Infinity, path:[]};
+  while(cur){
+    path.unshift(cur);
+    if(cur===start) break;
+    cur = prev[cur];
+  }
+  return {dist:dist[end], path};
+}
+
+/* ============================= APP STATE ============================= */
+let cart = [];
+let currentRestaurant = null;
+let deliveryLocation = null;
+let assignedRider = null;
+
+function go(pageId){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+}
+
+function renderRestaurants(){
+  const q = (document.getElementById('searchBox').value||"").toLowerCase();
+  const list = document.getElementById('restaurantList');
+  list.innerHTML = "";
+  restaurants
+    .filter(r => r.name.toLowerCase().includes(q) || r.cuisine.toLowerCase().includes(q))
+    .forEach(r=>{
+      const div = document.createElement('div');
+      div.className = "r-card";
+      div.onclick = () => openMenu(r.id);
+      div.innerHTML = `
+        <div class="r-emoji">${r.emoji}</div>
+        <div class="r-info">
+          <div class="name">${r.name}</div>
+          <div class="meta">${r.cuisine}</div>
+          <div class="loc">📍 ${r.loc}</div>
+        </div>`;
+      list.appendChild(div);
+    });
+}
+
+function openMenu(rid){
+  currentRestaurant = restaurants.find(r=>r.id===rid);
+  document.getElementById('menuTitle').textContent = currentRestaurant.name;
+  const list = document.getElementById('menuList');
+  list.innerHTML = "";
+  menus[rid].forEach(([name, price])=>{
+    const div = document.createElement('div');
+    div.className = "m-item";
+    div.innerHTML = `
+      <div>
+        <div class="mname">${name}</div>
+        <div class="mprice">RM ${price.toFixed(2)}</div>
+      </div>
+      <button class="add-btn">+</button>`;
+    div.querySelector('button').onclick = () => addToCart(name, price);
+    list.appendChild(div);
+  });
+  go('page-menu');
+}
+
+function addToCart(name, price){
+  cart.push({name, price, restaurant: currentRestaurant});
+  document.getElementById('cartCount').textContent = cart.length;
+}
+
+function renderCart(){
+  const list = document.getElementById('cartList');
+  const footer = document.getElementById('cartFooter');
+  list.innerHTML = "";
+  if(cart.length===0){
+    list.innerHTML = `<div class="empty-note">Your cart is empty.<br>Add something delicious first 🍽️</div>`;
+    footer.style.display = "none";
+    return;
+  }
+  footer.style.display = "block";
+  let total = 0;
+  cart.forEach((item, i)=>{
+    total += item.price;
+    const div = document.createElement('div');
+    div.className = "c-item";
+    div.innerHTML = `<span>${item.name} — RM ${item.price.toFixed(2)}</span><button onclick="removeFromCart(${i})">✕</button>`;
+    list.appendChild(div);
+  });
+  document.getElementById('cartTotal').textContent = "RM " + total.toFixed(2);
+
+  const sel = document.getElementById('deliverySelect');
+  sel.innerHTML = "";
+  ["Faculty of Computer Science","Main Library","UM Central","KK12 Hostel","DTC"].forEach(loc=>{
+    const opt = document.createElement('option');
+    opt.value = loc; opt.textContent = loc;
+    sel.appendChild(opt);
+  });
+}
+
+function removeFromCart(i){
+  cart.splice(i,1);
+  document.getElementById('cartCount').textContent = cart.length;
+  renderCart();
+}
+
+/* nav hooks that need fresh render */
+document.getElementById('deliverySelect');
+const _origGo = go;
+go = function(pageId){
+  _origGo(pageId);
+  if(pageId==='page-restaurants') renderRestaurants();
+  if(pageId==='page-cart') renderCart();
+};
+
+function confirmOrder(){
+  if(cart.length===0) return;
+  deliveryLocation = document.getElementById('deliverySelect').value;
+  go('page-assign');
+  document.getElementById('assignSpinner').style.display = 'block';
+  document.getElementById('assignResult').style.display = 'none';
+
+  setTimeout(()=>{
+    const pickupNode = currentRestaurant.loc;
+    const ranked = riders.map(r=>{
+      const {dist} = dijkstra(r.loc, pickupNode);
+      return {...r, dist};
+    }).sort((a,b)=> a.dist - b.dist || b.rating - a.rating);
+
+    assignedRider = ranked[0];
+
+    const body = document.getElementById('heapBody');
+    body.innerHTML = "";
+    ranked.forEach((r,i)=>{
+      const tr = document.createElement('tr');
+      if(i===0) tr.className = "winner";
+      tr.innerHTML = `
+        <td><span class="rank-badge ${i===0?'top':''}">${i+1}</span></td>
+        <td>${r.name}</td>
+        <td>${r.rating.toFixed(1)} ⭐</td>
+        <td>${r.dist.toFixed(2)} km</td>`;
+      body.appendChild(tr);
+    });
+
+    document.getElementById('assignSpinner').style.display = 'none';
+    document.getElementById('assignResult').style.display = 'block';
+  }, 1400);
+}
+
+/* ============================= LIVE TRACKING (simulated) ============================= */
+let trackTimer = null;
+
+function buildSvgMap(fullPath, riderStartNode){
+  const svg = document.getElementById('mapSvg');
+  svg.innerHTML = "";
+  const NS = "http://www.w3.org/2000/svg";
+
+  // roads (faint)
+  roads.forEach(([a,b])=>{
+    const pa = nodePos[a], pb = nodePos[b];
+    const line = document.createElementNS(NS,"line");
+    line.setAttribute("x1",pa.x); line.setAttribute("y1",pa.y);
+    line.setAttribute("x2",pb.x); line.setAttribute("y2",pb.y);
+    line.setAttribute("stroke","#EFE0C8"); line.setAttribute("stroke-width","5");
+    line.setAttribute("stroke-linecap","round");
+    svg.appendChild(line);
+  });
+
+  // active route (gold, on top)
+  for(let i=0;i<fullPath.length-1;i++){
+    const pa = nodePos[fullPath[i]], pb = nodePos[fullPath[i+1]];
+    const line = document.createElementNS(NS,"line");
+    line.setAttribute("x1",pa.x); line.setAttribute("y1",pa.y);
+    line.setAttribute("x2",pb.x); line.setAttribute("y2",pb.y);
+    line.setAttribute("stroke","#FFC72C"); line.setAttribute("stroke-width","6");
+    line.setAttribute("stroke-linecap","round");
+    svg.appendChild(line);
+  }
+
+  // nodes
+  Object.entries(nodePos).forEach(([name,p])=>{
+    const isStop = fullPath.includes(name);
+    const c = document.createElementNS(NS,"circle");
+    c.setAttribute("cx",p.x); c.setAttribute("cy",p.y);
+    c.setAttribute("r", isStop?9:6);
+    c.setAttribute("fill", isStop? "#DA291C":"#fff");
+    c.setAttribute("stroke", isStop? "#DA291C":"#D8C7A8");
+    c.setAttribute("stroke-width","2");
+    svg.appendChild(c);
+
+    const t = document.createElementNS(NS,"text");
+    t.setAttribute("x",p.x); t.setAttribute("y", p.y - 14);
+    t.setAttribute("text-anchor","middle");
+    t.setAttribute("font-size","15");
+    t.setAttribute("fill", isStop? "#23201B":"#B8A98A");
+    t.setAttribute("font-weight", isStop? "700":"500");
+    t.textContent = name;
+    svg.appendChild(t);
+  });
+
+  // rider marker
+  const marker = document.createElementNS(NS,"text");
+  marker.setAttribute("id","riderMarker");
+  marker.setAttribute("font-size","30");
+  marker.setAttribute("text-anchor","middle");
+  const startP = nodePos[riderStartNode];
+  marker.setAttribute("x", startP.x);
+  marker.setAttribute("y", startP.y + 10);
+  marker.textContent = "🛵";
+  svg.appendChild(marker);
+}
+
+function startTracking(){
+  go('page-tracking');
+  document.getElementById('trackRiderName').textContent = assignedRider.name;
+  document.getElementById('trackRiderRating').textContent = assignedRider.rating.toFixed(1) + " ⭐ • " + assignedRider.loc;
+
+  const pickupNode = currentRestaurant.loc;
+  const leg1 = dijkstra(assignedRider.loc, pickupNode);   // rider -> restaurant
+  const leg2 = dijkstra(pickupNode, deliveryLocation);    // restaurant -> customer
+  const fullPath = leg1.path.concat(leg2.path.slice(1));
+  const totalDist = leg1.dist + leg2.dist;
+
+  buildSvgMap(fullPath, assignedRider.loc);
+
+  // Precompute cumulative distances along path for interpolation
+  const segDist = [];
+  let acc = 0;
+  for(let i=0;i<fullPath.length-1;i++){
+    const a = nodePos[fullPath[i]], b = nodePos[fullPath[i+1]];
+    acc += Math.hypot(b.x-a.x, b.y-a.y);
+    segDist.push(acc);
+  }
+  const totalPixelDist = acc || 1;
+
+  const DURATION_MS = 14000; // demo-compressed duration
+  const startTime = performance.now();
+  const marker = document.getElementById('riderMarker');
+  const statusText = document.getElementById('statusText');
+  const progressFill = document.getElementById('progressFill');
+  const etaText = document.getElementById('etaText');
+  const distText = document.getElementById('distText');
+  const pickupFrac = leg1.dist / totalDist;
+
+  clearInterval(trackTimer);
+  trackTimer = setInterval(()=>{
+    const t = Math.min(1, (performance.now()-startTime)/DURATION_MS);
+    const targetPixel = t * totalPixelDist;
+
+    // find position along path
+    let segIndex = 0;
+    while(segIndex < segDist.length && segDist[segIndex] < targetPixel) segIndex++;
+    const prevAcc = segIndex===0 ? 0 : segDist[segIndex-1];
+    const a = nodePos[fullPath[segIndex]] || nodePos[fullPath[fullPath.length-1]];
+    const b = nodePos[fullPath[segIndex+1]] || a;
+    const segLen = (Math.hypot(b.x-a.x,b.y-a.y)) || 1;
+    const segT = Math.min(1, (targetPixel - prevAcc)/segLen);
+    const x = a.x + (b.x-a.x)*segT;
+    const y = a.y + (b.y-a.y)*segT;
+    marker.setAttribute("x", x);
+    marker.setAttribute("y", y + 10);
+
+    progressFill.style.width = (t*100).toFixed(0) + "%";
+    const remainingKm = (totalDist * (1-t)).toFixed(2);
+    distText.textContent = remainingKm + " km remaining";
+    const etaMin = Math.max(0, Math.ceil((1-t) * (totalDist*2)));
+    etaText.textContent = "ETA " + etaMin + " min";
+
+    if(t < pickupFrac){
+      statusText.textContent = "🛵 " + assignedRider.name + " is heading to " + currentRestaurant.name;
+    } else if(t < 1){
+      statusText.textContent = "📦 Order picked up — on the way to you!";
+    } else {
+      statusText.textContent = "✅ Arrived!";
+      clearInterval(trackTimer);
+      setTimeout(()=> go('page-delivered'), 900);
+    }
+  }, 60);
+}
+
+function resetApp(){
+  cart = [];
+  currentRestaurant = null;
+  deliveryLocation = null;
+  assignedRider = null;
+  document.getElementById('cartCount').textContent = 0;
+  go('page-login');
+}
+</script>
+</body>
+</html>
